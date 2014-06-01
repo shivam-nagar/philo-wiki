@@ -1,0 +1,26 @@
+#sideBar {
+  padding-top: 15px
+}
+
+#graphArea {
+  padding: 0px;
+}
+
+#add-btns li {
+  padding-bottom: 2px;
+  margin-left: 2px;
+}
+.btn-go {
+  color: #ffffff;
+  padding-top: 2px;
+}
+
+.label {
+  display: inline-block;
+  margin: 2px;
+}
+
+#currentTrace {
+  overflow: scroll;
+  height: 200px;
+}

@@ -43,7 +43,7 @@ function init(jsonData){
         Navigation: {
           enable: true,
           panning: true,
-          zooming: 10
+          zooming: 15
         },
         //Set Node and Edge styles.
         Node: {
@@ -71,6 +71,7 @@ function init(jsonData){
                 rgraph.onClick(node.id, {
                     onComplete: function() {
                         Log.write("done");
+                        alert('Chakko'+node.id)
                     }
                 });
             };

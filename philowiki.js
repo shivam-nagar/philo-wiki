@@ -1,25 +1,41 @@
 var tmp = 0;
+var first = 1;
 function getWikiPage(url){
 	if(url == "/wiki/Philosophy"){
 		$("#result1").append(url.substring(6) + "<br>");
 		$("#submitBtn").removeAttr("disabled");
+		$("#showBtn").removeAttr("disabled");
+
 		var temp = jsonList;
 		jsonList = { 	"id": url.substring(6), 
 						"name": url.substring(6), 
 						children: [ temp ] 
 					};
+		if(first == 1){
+			finalList = jsonList;
+			first = 0;
+		}
+		jsonList = {};
+		tmp = 1;
+		found = false;
 		//alert(jsonList);
-		init(jsonList);
+		//init(jsonList);
 		return;
 	}
 	$("#result").load("http://en.wikipedia.org"+url,function(responseTxt,statusTxt,xhr){
 		if(statusTxt=="success"){
-			//alert("External content loaded successfully!");	
-			
+			//alert("External content loaded successfully!");
 			if(url != "/wiki/Special:Random"){
 				$("#result1").append('<a href="http://en.wikipedia.org'+url+'" target="_blank">'+url.substring(6) + "</a><br>");
-				var temp = jsonList;
+				
+				console.log("looking for "+url.substring(6));
+				var el = traverse(finalList,url.substring(6));
+				if(el){
+					alert("matching at "+url.substring(6));
+				}
+
 				if(tmp != 1){
+					var temp = jsonList;
 					jsonList = { 	"id": url.substring(6), 
 									"name": url.substring(6), 
 									children: [ temp ] 
@@ -40,6 +56,24 @@ function getWikiPage(url){
 			alert("Error: "+xhr.status+": "+xhr.statusText);
 	});
 }
+var found = false;
+function traverse(data,pk) {
+    console.log(data["id"]); 
+
+    if(data["id"] != undefined && data["id"] == pk && found == false) { 
+        alert("Found "+pk);
+        found = true;
+        //alert(JSON.stringify(jsonList));
+        //alert(JSON.stringify(finalList));
+        data.children[data.children.length++] = (jsonList);
+        //alert(JSON.stringify(finalList));
+    }
+    else if(data.children !== undefined){
+    	for(var i=0;i<data.children.length;i++)
+        	traverse(data.children[i], pk); //!! else use recursion to test a child property if present	
+    } 
+}
+
 function getNextLink(){
 	var linkList = $("#result #mw-content-text p a");
 	var returnURL = "";

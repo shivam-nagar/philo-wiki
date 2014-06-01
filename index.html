@@ -1,38 +1,125 @@
 <html>
 <head>
-<link type="text/css" href="./jit/Examples/css/base.css" rel="stylesheet" />
-<link type="text/css" href="./jit/Examples/css/RGraph.css" rel="stylesheet" />
+  <link type="text/css" href="./jit/Examples/css/base.css" rel="stylesheet" />
+  <link type="text/css" href="./jit/Examples/css/RGraph.css" rel="stylesheet" />
 
-<script src="jquery-2.0.3.min.js"></script>
-<script language="javascript" type="text/javascript" src="./jit/jit.js"></script>
-<script language="javascript" type="text/javascript" src="./jit/Examples/RGraph/example1.js"></script>
-<script src="philowiki.js"></script>
+  <script src="jquery-2.0.3.min.js"></script>
+  <script language="javascript" type="text/javascript" src="./jit/jit.js"></script>
+  <script language="javascript" type="text/javascript" src="./jit/Examples/RGraph/example1.js"></script>
+
+  <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+  <!--link rel="stylesheet" href="css/style.css"-->
+  <link rel="stylesheet" href="bootstrap/css/bootstrap-theme.min.css">
+  <script src="bootstrap/js/bootstrap.min.js"></script>
+
+  <script src="ui-handler.js"></script>
+  <link type="text/css" href="philowiki-api.css" rel="stylesheet" />
+
 </head>
 <body onload="">
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-3" id="sideBar">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <div class="input-group">
+            <input type="text" class="form-control" id="urlText" placeholder="Type to start tracing...">
+            <span class="btn btn-primary input-group-addon btn-go" id="submitBtn"><span class="glyphicon glyphicon glyphicon-chevron-right"></span></span>
+          </div>
+        </div>
+        <div class="panel-body" id="displayed-items">
+          <span class="label label-danger" id="no-trace">No traces added</span>
+        </div>
+      </div>
+      <div class="panel panel-default">
+        <div class="panel-heading">Add to Graph ...
+          <span id="add-panelinfo" style="float: right">
+            <span class="glyphicon glyphicon glyphicon-chevron-up"></span>
+          </span>
+        </div>
+        <div class="panel-body" id="add-panelBody">
+          <ul class="nav nav-pills small" id="add-btns">
+            <li>
+              <div class="btn-group small">
+                <button type="button" class="btn btn-primary btn-sm">India</button>
+              </div>
+            </li>
+            <li>
+              <div class="btn-group small">
+                <button type="button" class="btn btn-primary btn-sm">Air</button>
+              </div>
+            </li>
+            <li>
+              <div class="btn-group small">
+                <button type="button" class="btn btn-primary btn-sm">Pyramid</button>
+              </div>
+            </li>
+            <li>
+              <div class="btn-group small">
+                <button type="button" class="btn btn-primary btn-sm">China</button>
+              </div>
+            </li>
+            <li>
+              <div class="btn-group small">
+                <button type="button" class="btn btn-primary btn-sm">Dire Straits</button>
+              </div>
+            </li>
+            <li>
+              <div class="btn-group small">
+                <button type="button" class="btn btn-primary btn-sm">Computation</button>
+              </div>
+            </li>
+            <li>
+              <div class="btn-group small">
+                <button type="button" class="btn btn-primary btn-sm">Theory</button>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
 
-<div id="inputBoxDiv">
-	<input type="text" id="urlText">
-	<input type="submit" id="submitBtn">
+      <div class="panel panel-default">
+        <!-- Default panel contents -->
+        <div class="panel-heading">Trace</div>
+        <!-- List group -->
+        <ul class="list-group small" id="currentTrace">
+        </ul>
+      </div>
+
+      <div id="result" style="display:none; overflow: scroll; height: 250px">
+      </div>
+    </div>
+    <div class="col-md-9" id="graphArea">
+      <div id="infovis"></div>
+    </div>
+  </div>
 </div>
-<div id="result" style="display:none">
-</div>
-<div id="result1" style="padding:10px">
-</div>
-
-
-<div id="infovis"></div>    
-
-
-
 <script type="text/javascript">
-var jsonList = new Object();
+var jsonList = {};
+var finalList = {};
 $("#submitBtn").click(function(){
+  resetGraph();
 	var url = $("#urlText").val();
-	$("#submitBtn").attr("disabled", "disabled");
-	$("#result1").empty();
-	getWikiPage(url);
+  $("#no-trace").remove();
+  $("#displayed-items").append($('<span class="label label-primary">'+url+'</span>'))
+  getWikiPage(url);
+  disableActions();
 });
-$("#urlText").val("/wiki/Special:Random");
+
+$("#add-btns li div button").click(function(){
+  $("#urlText").val(this.innerHTML);
+  $("#submitBtn").click();
+  this.parentNode.parentNode.remove();
+})
+
+function disableActions() {
+  $("#urlText").attr("disabled","true")
+  $(".btn").attr("disabled","true")
+  $("#currentTrace").empty()
+}
+
 </script>
+<script src="philowiki-api.js"></script>
+
 </body>
 </html>
