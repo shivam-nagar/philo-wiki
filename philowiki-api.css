@@ -24,3 +24,13 @@
   overflow: scroll;
   height: 200px;
 }
+
+#add-panelBody {
+  overflow: hidden;
+  height: 111px;
+}
+
+#displayed-items {
+  height: 125px;
+  overflow: scroll;
+}

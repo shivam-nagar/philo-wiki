@@ -7,6 +7,10 @@
  */
 var flag = true;
 var parsed = false;
+var jsonList = {};
+var finalList = {};
+var animateHandle;
+var rotateAmt = 0;
 function resetGraph(){
     flag = true;
     jsonList = {};
@@ -21,16 +25,7 @@ function renderGraph(){
 function traverse(data,pk) {
     if(parsed == true) return true
     if(data["id"] != undefined && data["id"] == pk) {
-        console.log(JSON.stringify(jsonList))
-        console.log(JSON.stringify(finalList))
-        console.log(JSON.stringify(data))
-
         data.children[data.children.length++] = (jsonList);
-
-        console.log("$$$ Found"+pk );
-        console.log(JSON.stringify(data))
-        console.log(JSON.stringify(jsonList))
-        console.log(JSON.stringify(finalList))
         parsed = true
         return true;
     }
@@ -60,14 +55,50 @@ function pushToGraph(title,url,text){
         };
     }
 }
+
+$("#submitBtn").click(function(){
+    resetGraph();
+    var url = $("#urlText").val();
+    $("#no-trace").remove();
+    $("#displayed-items").append($('<span class="label label-primary">'+url+'</span>'))
+    $("#displayed-items").scrollTop($("#displayed-items")[0].scrollHeight);
+    getWikiPage(url);
+    disableActions();
+});
+
+function disableActions() {
+    animateHandle = setInterval(function(){
+        rotateAmt +=10
+        $("#trace-panelinfo span").css("transform","rotate("+rotateAmt+"deg)")
+    }, 40);
+    $("#urlText").attr("disabled","true")
+    $(".btn").attr("disabled","true")
+    $("#currentTrace").empty()
+}
+
+function markError(level) {
+    $("#displayed-items span").last().removeClass("label-primary").addClass("label-"+level)
+}
+
 function addTrace(trace) {
     $("#currentTrace").append($('<li class="list-group-item">'+trace+'</li>'))
     $("#currentTrace").scrollTop($("#currentTrace")[0].scrollHeight);
 }
 
+function findLoop(currentNode){
+    var list=[];
+    $("#currentTrace li").each(function(){list.push(this.innerHTML);});
+    if(list.indexOf(currentNode) >= 0) return true;
+    else return false
+}
+
 function enableActions() {
-    $("#urlText").removeAttr("disabled")
-    $(".btn").removeAttr("disabled")
+    clearInterval(animateHandle);
+    rotateAmt = 0;
+    $("#trace-panelinfo span").css("transform","rotate("+rotateAmt+"deg)")
+    $("#urlText").removeAttr("disabled");
+    $(".btn").removeAttr("disabled");
+    $("#urlText").val("");
 }
 
 function getWikiPage(title){
@@ -77,12 +108,24 @@ function getWikiPage(title){
         url: url,
         crossDomain: true,
         success: function(json){
+            if(json.error != undefined){
+                addTrace("<span class='text-danger glyphicon glyphicon-remove-sign'></span> &nbsp; <span class='text-danger'>"+json.error.info+"</span>")
+                markError("danger")
+                enableActions()
+                return
+            }
             var content = $('#result').html($('<div/>').html(json.parse.text['*']).find('p'));
             var next = getNextLink();
             pushToGraph(json.parse.title,json.parse.title,$('#result').html());
-            addTrace(json.parse.title);
             if(next != "Philosophy") {
-                getWikiPage(getNextLink());
+                if(findLoop(json.parse.title)){
+                  addTrace("<span class='text-danger glyphicon glyphicon-retweet'></span> &nbsp; <span class='text-danger'>Loop found at: "+json.parse.title+"</span>")
+                  markError("warning")
+                  enableActions();
+                } else {
+                    addTrace(json.parse.title);
+                    getWikiPage(getNextLink());
+                }
             } else {
                 pushToGraph("Philosophy","Philosophy","");
                 if(parsed != true) finalList = jsonList;
@@ -93,6 +136,7 @@ function getWikiPage(title){
         }
     });
 }
+
 function getNextLink(){
     var linkList = $("#result p a");
     var returnURL = "";
@@ -126,3 +170,40 @@ function getNextLink(){
     return returnURL;
 }
 
+function random_character() {
+    var chars = "abcdefghijklmnopqurstABCDEFGHIJKLMNOPQURSTUVW";
+    return chars.substr( Math.floor(Math.random() * chars.length), 1);
+}
+
+function checkIfEmpty() {
+    if($("#add-btns li div button").length <= 0) {
+        $("#add-btns").append($('<li><div class="btn-group small"><button type="button" class="btn btn-warning btn-sm" onclick="loadSuggestions()">Add more Suggestions</button></div></li>'))
+    }
+}
+
+function loadSuggestions() {
+    var query = "http://en.wikipedia.org/w/api.php?action=query&list=search&srprop=sectiontitle&format=json&srlimit=20&srsearch="+random_character()
+    $.ajax({
+        dataType: "jsonp",
+        url: query,
+        crossDomain: true,
+        success: function(json){
+            var objList = JSON.parse(JSON.stringify(json))["query"]["search"];
+            var fullList = []
+            $("#add-btns").empty()
+            for(i=0;i<objList.length;i++)  {
+                if(objList[i]["title"].length > 20) continue;
+                fullList[i] = objList[i]["title"]
+                $("#add-btns").append($('<li><div class="btn-group small"><button type="button" class="btn btn-primary btn-sm">'+fullList[i]+'</button></div></li>'))
+            }
+            $("#add-btns li div button").click(function() {
+                $("#urlText").val(this.innerHTML);
+                $("#submitBtn").click();
+                this.parentNode.parentNode.remove();
+                checkIfEmpty();
+            });
+
+        }
+    });
+}
+loadSuggestions();
