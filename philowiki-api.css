@@ -21,7 +21,7 @@
 }
 
 #currentTrace {
-  overflow: scroll;
+  overflow-y: scroll;
   height: 200px;
 }
 
@@ -32,5 +32,5 @@
 
 #displayed-items {
   height: 125px;
-  overflow: scroll;
+  overflow-y: scroll;
 }
